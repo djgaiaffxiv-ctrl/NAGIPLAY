@@ -1,0 +1,60 @@
+================================================
+  NAGIPLAY — Reproductor de video de NAGI STUDIOS
+================================================
+
+ARRANCAR
+  · Doble clic en  NAGIPLAY.vbs   (arranque silencioso, sin consola)
+  · O bien, desde una terminal en esta carpeta:  npm start
+
+ABRIR VIDEOS
+  · Botón "Abrir archivo" / "Abrir carpeta" en la bienvenida.
+  · Menú  Multimedia → Abrir archivo… (Ctrl+O) / Abrir carpeta… (Ctrl+F).
+  · Arrastra y suelta archivos sobre la ventana.
+
+ATAJOS DE TECLADO
+  Espacio ......... Reproducir / Pausa
+  F / doble clic .. Pantalla completa     (Esc para salir)
+  ← / → ........... Retroceder / Avanzar 5s   (Shift = 1 min)
+  ↑ / ↓ ........... Volumen
+  M ............... Silenciar
+  S ............... Detener
+  N / P ........... Siguiente / Anterior
+  + / - ........... Velocidad
+  L ............... Repetir
+  0–9 ............. Saltar al 0%–90%
+  Ctrl+O / Ctrl+F . Abrir archivo / carpeta
+  Ctrl+S .......... Captura de fotograma
+
+FUNCIONES
+  · Lista de reproducción con aleatorio y repetición.
+  · Subtítulos .srt / .vtt (menú Subtítulos → Añadir).
+  · Velocidad 0.25x–4x, relación de aspecto, capturas PNG.
+  · "Siempre visible" (modo flotante) en el menú Ver.
+  · Doble clic en el vídeo = pantalla completa (inmersiva).
+  · Recuerda tu configuración (volumen, repetición, velocidad…) al cerrar.
+
+MINI-REPRODUCTOR (acoplado a la barra de tareas)
+  · Con un archivo en reproducción, pulsa MINIMIZAR: el reproductor se
+    convierte en una barra flotante encima de la barra de tareas.
+  · Muestra carátula (fotograma del vídeo o logo), título, ⏮ ⏯ ⏭,
+    barra de progreso y volumen. Arrástrala para moverla.
+  · Pulsa el icono de expandir (o la carátula) para volver al reproductor.
+  · Si no hay nada cargado, Minimizar funciona de forma normal.
+
+RECORTAR VÍDEO (botón ✂)
+  · Corta el vídeo a cualquier duración: marca inicio/fin con los tiradores
+    o con "Inicio/Fin = ahora".
+  · Formato (opcional): Original · Vertical 9:16 · Cuadrado 1:1.
+  · En vertical/cuadrado: "Recortar centro" o "Fondo difuminado".
+  · "Guardar recorte (MP4)" → exporta a MP4 (H.264/AAC) con barra de progreso.
+  · Usa ffmpeg incrustado (no necesitas instalar nada).
+
+FORMATOS
+  Reproduce lo que soporta el motor del sistema: MP4/H.264, WebM,
+  MKV (H.264), MOV, M4V, audio (MP3/AAC/FLAC/OGG...). Contenedores
+  antiguos (AVI/WMV) pueden no abrirse según el códec instalado.
+
+CREAR INSTALADOR (.exe) — opcional
+  npm run dist      (genera dist\NAGIPLAY Setup x.x.x.exe con electron-builder)
+
+© 2026 NAGI STUDIOS

@@ -1,0 +1,18 @@
+# Dependencias (se reinstalan con: npm install)
+node_modules/
+
+# Salida del empaquetado / instaladores
+dist/
+out/
+
+# Logs y temporales
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Ajustes locales del usuario (se generan en runtime)
+nagiplay-settings.json
+
+# Copia del ejecutable renombrado (se regenera; va dentro de node_modules)
+node_modules/electron/dist/NAGIPLAY.exe

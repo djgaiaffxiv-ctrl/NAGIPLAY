@@ -1,0 +1,95 @@
+:root {
+  --turq: #56BFC2;
+  --turq-deep: #47AFB3;
+  --turq-glow: rgba(86, 191, 194, .5);
+  --text: #eaf5f5;
+  --muted: #9fb6b7;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  background: transparent; overflow: hidden;
+  font-family: 'Rubik', system-ui, sans-serif;
+  user-select: none;
+}
+
+.mini {
+  position: absolute; inset: 6px 6px 0 6px;   /* sin margen inferior: a ras de la barra de tareas */
+  display: flex; align-items: center; gap: 16px;
+  padding: 8px 16px 8px 10px;
+  border-radius: 16px 16px 0 0;                 /* solo esquinas superiores */
+  /* Fondo acrílico translúcido: deja ver/difumina lo que hay detrás */
+  background: linear-gradient(135deg, rgba(18,32,36,.72), rgba(11,21,24,.78));
+  border: 1px solid rgba(255,255,255,.08);
+  border-bottom: 0;
+  box-shadow: 0 -2px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter: blur(26px) saturate(1.4);
+  -webkit-app-region: drag;
+}
+
+/* Carátula */
+.art {
+  position: relative; width: 72px; height: 72px; flex: 0 0 72px;
+  border-radius: 16px; overflow: hidden; cursor: pointer;
+  background: radial-gradient(120% 120% at 30% 20%, #1c3a3f, #0c1719);
+  -webkit-app-region: no-drag;
+  box-shadow: 0 4px 14px rgba(0,0,0,.4);
+}
+.art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.art img.is-logo { object-fit: contain; padding: 14px; filter: drop-shadow(0 0 8px var(--turq-glow)); }
+.art-dim { position: absolute; inset: 0; background: rgba(0,0,0,0); transition: background .15s; }
+.art-expand {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: #fff; font-size: 22px; opacity: 0; transition: opacity .15s; text-shadow: 0 1px 6px rgba(0,0,0,.6);
+}
+.art:hover .art-dim { background: rgba(0,0,0,.4); }
+.art:hover .art-expand { opacity: 1; }
+
+/* Título / subtítulo */
+.meta { min-width: 120px; max-width: 190px; flex: 0 1 auto; }
+.title {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sub {
+  font-size: 12.5px; color: var(--muted); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Transporte */
+.transport { display: flex; align-items: center; gap: 6px; -webkit-app-region: no-drag; }
+.mb {
+  background: none; border: 0; color: var(--text); cursor: pointer;
+  width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center; transition: background .15s, color .15s, transform .1s;
+}
+.mb .ic { width: 20px; height: 20px; display: block; }
+.mb:hover { background: rgba(86,191,194,.16); color: var(--turq); }
+.mb:active { transform: scale(.9); }
+.mb.sm { width: 32px; height: 32px; color: var(--muted); }
+.mb.sm .ic { width: 18px; height: 18px; }
+.mb.sm:hover { color: var(--turq); }
+.mb.on { color: var(--turq); }
+.mb-play {
+  width: 46px; height: 46px; color: #04181a;
+  background: linear-gradient(160deg, var(--turq), var(--turq-deep));
+  box-shadow: 0 5px 16px var(--turq-glow);
+}
+.mb-play .ic { width: 22px; height: 22px; }
+.mb-play:hover { color: #04181a; filter: brightness(1.08); transform: scale(1.05); }
+
+/* Barra de progreso */
+.seek { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 110px; -webkit-app-region: no-drag; }
+.t { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 32px; }
+.t:last-child { text-align: right; }
+.track { position: relative; flex: 1; height: 6px; border-radius: 999px; background: rgba(255,255,255,.15); cursor: pointer; }
+.buf { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,255,255,.12); border-radius: 999px; }
+.fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, var(--turq-deep), var(--turq)); border-radius: 999px; }
+.knob {
+  position: absolute; top: 50%; left: 0; width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; transform: translate(-50%,-50%) scale(0); transition: transform .12s;
+  box-shadow: 0 0 8px var(--turq-glow);
+}
+.track:hover .knob { transform: translate(-50%,-50%) scale(1); }
+
+.right { display: flex; align-items: center; gap: 2px; -webkit-app-region: no-drag; }

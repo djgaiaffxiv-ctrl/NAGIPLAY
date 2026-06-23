@@ -1,0 +1,72 @@
+{
+  "name": "nagiplay",
+  "version": "1.0.0",
+  "description": "NAGIPLAY — reproductor de video de NAGI STUDIOS (clon de VLC)",
+  "main": "main.js",
+  "author": "NAGI STUDIOS",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "icon": "electron tools/gen-icon.js",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.nagistudios.nagiplay",
+    "productName": "NAGIPLAY",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "fileAssociations": [
+      {
+        "ext": "mp4",
+        "name": "Video MP4",
+        "role": "Viewer"
+      },
+      {
+        "ext": "mkv",
+        "name": "Video MKV",
+        "role": "Viewer"
+      },
+      {
+        "ext": "webm",
+        "name": "Video WebM",
+        "role": "Viewer"
+      },
+      {
+        "ext": "m4v",
+        "name": "Video M4V",
+        "role": "Viewer"
+      },
+      {
+        "ext": "mov",
+        "name": "Video MOV",
+        "role": "Viewer"
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "NAGIPLAY"
+    }
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.3.0"
+  }
+}

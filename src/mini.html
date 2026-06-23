@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self';" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="mini.css" />
+  <title>NAGIPLAY mini</title>
+</head>
+<body>
+  <div class="mini" id="mini">
+    <div class="art" id="art" title="Abrir NAGIPLAY">
+      <img id="artImg" src="nagi-mark.png" alt="" />
+      <div class="art-dim"></div>
+      <div class="art-expand">⤢</div>
+    </div>
+
+    <div class="meta">
+      <div class="title" id="mTitle">NAGIPLAY</div>
+      <div class="sub" id="mSub">Listo para reproducir</div>
+    </div>
+
+    <div class="transport">
+      <button class="mb" id="mPrev" title="Anterior"></button>
+      <button class="mb mb-play" id="mPlay" title="Reproducir / Pausa"></button>
+      <button class="mb" id="mNext" title="Siguiente"></button>
+    </div>
+
+    <div class="seek">
+      <span class="t" id="mCur">0:00</span>
+      <div class="track" id="mTrack"><div class="buf"></div><div class="fill" id="mFill"></div><div class="knob" id="mKnob"></div></div>
+      <span class="t" id="mRem">-0:00</span>
+    </div>
+
+    <div class="right">
+      <button class="mb sm" id="mLoop" title="Repetir"></button>
+      <button class="mb sm" id="mMute" title="Silenciar"></button>
+      <button class="mb sm" id="mExpand" title="Abrir NAGIPLAY"></button>
+    </div>
+  </div>
+
+  <script src="mini.js"></script>
+</body>
+</html>

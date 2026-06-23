@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' data: blob: file:; media-src 'self' file: blob: data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self';" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>NAGIPLAY</title>
+</head>
+<body>
+  <!-- ===== Barra de título personalizada ===== -->
+  <header class="titlebar" id="titlebar">
+    <div class="tb-brand">
+      <img src="nagi-mark.png" alt="NAGI" class="tb-logo" />
+      <span class="tb-word">NAGI<b>PLAY</b></span>
+    </div>
+
+    <nav class="tb-menu" id="menubar">
+      <button class="menu-btn" data-menu="media">Multimedia</button>
+      <button class="menu-btn" data-menu="playback">Reproducción</button>
+      <button class="menu-btn" data-menu="audio">Audio</button>
+      <button class="menu-btn" data-menu="video">Video</button>
+      <button class="menu-btn" data-menu="subtitle">Subtítulos</button>
+      <button class="menu-btn" data-menu="view">Ver</button>
+      <button class="menu-btn" data-menu="help">Ayuda</button>
+    </nav>
+
+    <div class="tb-title" id="tbTitle">NAGIPLAY</div>
+
+    <div class="tb-winctl">
+      <button id="btnMin" class="wc" title="Minimizar"><svg viewBox="0 0 12 12"><rect x="2" y="5.5" width="8" height="1.2"/></svg></button>
+      <button id="btnMax" class="wc" title="Maximizar"><svg viewBox="0 0 12 12"><rect x="2.5" y="2.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.1"/></svg></button>
+      <button id="btnClose" class="wc wc-close" title="Cerrar"><svg viewBox="0 0 12 12"><path d="M3 3 L9 9 M9 3 L3 9" stroke="currentColor" stroke-width="1.3"/></svg></button>
+    </div>
+  </header>
+
+  <!-- ===== Menús desplegables ===== -->
+  <div class="dropdowns" id="dropdowns" hidden>
+    <ul class="dropdown" data-for="media">
+      <li data-act="open-file">Abrir archivo…<span class="kbd">Ctrl+O</span></li>
+      <li data-act="open-folder">Abrir carpeta…<span class="kbd">Ctrl+F</span></li>
+      <li class="sep"></li>
+      <li data-act="clear-playlist">Vaciar lista</li>
+    </ul>
+    <ul class="dropdown" data-for="playback">
+      <li data-act="playpause">Reproducir / Pausa<span class="kbd">Espacio</span></li>
+      <li data-act="stop">Detener<span class="kbd">S</span></li>
+      <li class="sep"></li>
+      <li data-act="prev">Anterior<span class="kbd">P</span></li>
+      <li data-act="next">Siguiente<span class="kbd">N</span></li>
+      <li class="sep"></li>
+      <li data-act="speed-down">Más lento<span class="kbd">-</span></li>
+      <li data-act="speed-reset">Velocidad normal</li>
+      <li data-act="speed-up">Más rápido<span class="kbd">+</span></li>
+    </ul>
+    <ul class="dropdown" data-for="audio">
+      <li data-act="mute">Silenciar<span class="kbd">M</span></li>
+      <li data-act="vol-up">Subir volumen<span class="kbd">↑</span></li>
+      <li data-act="vol-down">Bajar volumen<span class="kbd">↓</span></li>
+    </ul>
+    <ul class="dropdown" data-for="video">
+      <li data-act="fullscreen">Pantalla completa<span class="kbd">F</span></li>
+      <li data-act="snapshot">Captura de fotograma<span class="kbd">Ctrl+S</span></li>
+      <li class="sep"></li>
+      <li data-act="aspect-default">Relación: por defecto</li>
+      <li data-act="aspect-contain">Relación: ajustar (contain)</li>
+      <li data-act="aspect-cover">Relación: rellenar (cover)</li>
+      <li data-act="aspect-fill">Relación: estirar</li>
+    </ul>
+    <ul class="dropdown" data-for="subtitle">
+      <li data-act="open-sub">Añadir subtítulos…</li>
+      <li data-act="toggle-sub">Mostrar / ocultar</li>
+      <li class="sep"></li>
+      <li data-act="sub-delay-minus">Adelantar 0,25s</li>
+      <li data-act="sub-delay-plus">Retrasar 0,25s</li>
+    </ul>
+    <ul class="dropdown" data-for="view">
+      <li data-act="toggle-playlist">Lista de reproducción</li>
+      <li data-act="always-on-top">Siempre visible</li>
+      <li data-act="fullscreen">Pantalla completa<span class="kbd">F</span></li>
+    </ul>
+    <ul class="dropdown" data-for="help">
+      <li data-act="shortcuts">Atajos de teclado</li>
+      <li data-act="about">Acerca de NAGIPLAY</li>
+    </ul>
+  </div>
+
+  <!-- ===== Cuerpo ===== -->
+  <main class="layout" id="layout">
+    <!-- Zona de video -->
+    <section class="stage" id="stage">
+      <video id="video" tabindex="-1"></video>
+
+      <!-- Pantalla de bienvenida -->
+      <div class="welcome" id="welcome">
+        <img src="nagi-mark.png" alt="NAGI STUDIOS" class="welcome-logo" />
+        <h1 class="welcome-title">NAGI<b>PLAY</b></h1>
+        <p class="welcome-sub">Reproductor de video · NAGI STUDIOS</p>
+        <div class="welcome-actions">
+          <button id="welcomeOpen" class="btn-primary">Abrir archivo</button>
+          <button id="welcomeFolder" class="btn-ghost">Abrir carpeta</button>
+        </div>
+        <p class="welcome-hint">…o arrastra un video aquí</p>
+      </div>
+
+      <!-- Aviso de arrastre -->
+      <div class="drop-overlay" id="dropOverlay"><span>Suelta para reproducir</span></div>
+
+      <!-- OSD central (estado al pulsar play/pausa) -->
+      <div class="osd" id="osd"></div>
+
+      <!-- Indicador toast (volumen, velocidad…) -->
+      <div class="toast" id="toast"></div>
+
+      <!-- Controles inferiores -->
+      <div class="controls" id="controls">
+        <div class="seek">
+          <div class="seek-track" id="seekTrack">
+            <div class="seek-buffer" id="seekBuffer"></div>
+            <div class="seek-fill" id="seekFill"></div>
+            <div class="seek-knob" id="seekKnob"></div>
+          </div>
+          <div class="seek-tooltip" id="seekTip">0:00</div>
+        </div>
+
+        <div class="ctl-row">
+          <div class="ctl-left">
+            <button class="ctl" id="btnPrev" title="Anterior (P)">⏮</button>
+            <button class="ctl ctl-play" id="btnPlay" title="Reproducir / Pausa (Espacio)">▶</button>
+            <button class="ctl" id="btnStop" title="Detener (S)">⏹</button>
+            <button class="ctl" id="btnNext" title="Siguiente (N)">⏭</button>
+
+            <div class="vol">
+              <button class="ctl" id="btnMute" title="Silenciar (M)">🔊</button>
+              <div class="vol-track" id="volTrack"><div class="vol-fill" id="volFill"></div></div>
+            </div>
+
+            <span class="time" id="time">0:00 / 0:00</span>
+          </div>
+
+          <div class="ctl-right">
+            <button class="ctl ctl-text" id="btnSpeed" title="Velocidad de reproducción">1.0x</button>
+            <button class="ctl" id="btnLoop" title="Repetir">🔁</button>
+            <button class="ctl" id="btnSub" title="Subtítulos">💬</button>
+            <button class="ctl" id="btnShort" title="Recortar vídeo → MP4">✂</button>
+            <button class="ctl" id="btnSnap" title="Captura (Ctrl+S)">📷</button>
+            <button class="ctl" id="btnPlaylistToggle" title="Lista de reproducción">☰</button>
+            <button class="ctl" id="btnFs" title="Pantalla completa (F)">⛶</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lista de reproducción -->
+    <aside class="playlist" id="playlist">
+      <div class="pl-head">
+        <span>Lista de reproducción</span>
+        <div class="pl-head-btns">
+          <button id="btnShuffle" class="pl-mini" title="Aleatorio">🔀</button>
+          <button id="btnPlAdd" class="pl-mini" title="Añadir">＋</button>
+          <button id="btnPlClear" class="pl-mini" title="Vaciar">🗑</button>
+        </div>
+      </div>
+      <ul class="pl-items" id="plItems"></ul>
+      <div class="pl-empty" id="plEmpty">Sin elementos.<br />Abre un archivo o carpeta.</div>
+    </aside>
+  </main>
+
+  <!-- ===== Panel "Crear short" ===== -->
+  <div class="sheet" id="shortSheet" hidden>
+    <div class="sheet-head">
+      <span>✂ Recortar vídeo</span>
+      <button class="sheet-x" id="shortClose" title="Cerrar">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="trim">
+        <div class="trim-track" id="trimTrack">
+          <div class="trim-dim trim-dim-l" id="trimDimL"></div>
+          <div class="trim-dim trim-dim-r" id="trimDimR"></div>
+          <div class="trim-sel" id="trimSel"></div>
+          <div class="trim-h trim-in" id="trimIn" title="Inicio"></div>
+          <div class="trim-h trim-out" id="trimOut" title="Fin"></div>
+          <div class="trim-play" id="trimPlay"></div>
+        </div>
+      </div>
+      <div class="trim-times">
+        <button class="chip-sm" id="setIn">⏱ Inicio = ahora</button>
+        <span id="trimInfo">0:00 – 0:00 · 0:00</span>
+        <button class="chip-sm" id="setOut">Fin = ahora ⏱</button>
+      </div>
+
+      <div class="sheet-row">
+        <span class="sheet-lbl">Formato</span>
+        <div class="chips" id="fmtChips">
+          <button class="chip active" data-fmt="original">Original</button>
+          <button class="chip" data-fmt="vertical">Vertical 9:16</button>
+          <button class="chip" data-fmt="square">Cuadrado 1:1</button>
+        </div>
+      </div>
+      <div class="sheet-row" id="frameRow" hidden>
+        <span class="sheet-lbl">Encuadre</span>
+        <div class="chips" id="frameChips">
+          <button class="chip active" data-frame="crop">Recortar centro</button>
+          <button class="chip" data-frame="blur">Fondo difuminado</button>
+        </div>
+      </div>
+
+      <div class="sheet-actions">
+        <div class="export-progress" id="shortProg" hidden>
+          <div class="export-bar"><div class="export-fill" id="shortBar"></div></div>
+          <span id="shortPct">0%</span>
+          <button class="chip-sm" id="shortCancel">Cancelar</button>
+        </div>
+        <button class="btn-primary" id="shortExport">Guardar recorte (MP4)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal (atajos / acerca de) ===== -->
+  <div class="modal-wrap" id="modalWrap" hidden>
+    <div class="modal" id="modal">
+      <button class="modal-x" id="modalClose">✕</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Crédito de marca NAGI STUDIOS -->
+  <div data-nagi-credit="1" id="nagiCredit">
+    <img src="nagi-mark.png" alt="NAGI" />
+    <span>© 2026 NAGI STUDIOS</span>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
