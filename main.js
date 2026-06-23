@@ -308,6 +308,15 @@ ipcMain.handle('ffmpeg-export', (e, { args, durationSec }) => {
 ipcMain.on('ffmpeg-cancel', () => { if (ffJob) { try { ffJob.kill('SIGKILL'); } catch { /* */ } ffJob = null; } });
 ipcMain.on('reveal-file', (_e, p) => { try { shell.showItemInFolder(p); } catch { /* */ } });
 
+// Abrir una carpeta en el Explorador de Windows (devuelve false si no existe).
+ipcMain.handle('open-folder-path', async (_e, dir) => {
+  try {
+    if (!dir || !fs.existsSync(dir)) return false;
+    await shell.openPath(dir);
+    return true;
+  } catch { return false; }
+});
+
 ipcMain.on('win-minimize', () => mainWindow && mainWindow.minimize());
 ipcMain.on('win-maximize', () => {
   if (!mainWindow) return;

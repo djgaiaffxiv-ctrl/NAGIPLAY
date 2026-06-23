@@ -816,14 +816,10 @@ async function setFavorite() {
 }
 async function openFavorite() {
   if (!state.favoriteFolder) { setFavorite(); return; }
-  const files = await window.nagi.listFolderMedia(state.favoriteFolder);
-  if (files === null) { toast('La carpeta favorita ya no existe'); return; }
-  if (!files.length) { toast('La carpeta favorita no tiene multimedia'); return; }
-  // Cargar el contenido de la carpeta favorita (reemplaza la lista actual).
-  state.playlist = [];
-  state.current = -1;
-  addPaths(files);
-  toast('⭐ ' + folderName(state.favoriteFolder) + ' (' + files.length + ')');
+  // Abrir la carpeta en el Explorador de Windows (no toca la lista de reproducción).
+  const ok = await window.nagi.openFolderPath(state.favoriteFolder);
+  if (!ok) { toast('La carpeta favorita ya no existe'); return; }
+  toast('⭐ Abriendo ' + folderName(state.favoriteFolder));
 }
 $('btnFav').addEventListener('click', openFavorite);
 $('btnFav').addEventListener('contextmenu', (e) => { e.preventDefault(); setFavorite(); });
