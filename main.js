@@ -148,6 +148,25 @@ ipcMain.handle('open-folder-dialog', async () => {
   return out;
 });
 
+// Elegir una carpeta favorita (devuelve su ruta).
+ipcMain.handle('pick-folder', async () => {
+  const res = await dialog.showOpenDialog(mainWindow, {
+    title: 'Elegir carpeta favorita',
+    properties: ['openDirectory']
+  });
+  return res.canceled || !res.filePaths.length ? null : res.filePaths[0];
+});
+
+// Listar la multimedia de una carpeta dada (null si no existe).
+ipcMain.handle('list-folder-media', async (_e, dir) => {
+  try {
+    if (!dir || !fs.existsSync(dir)) return null;
+    return fs.readdirSync(dir)
+      .filter((f) => [...VIDEO_EXTS, ...AUDIO_EXTS].includes(path.extname(f).slice(1).toLowerCase()))
+      .map((f) => path.join(dir, f));
+  } catch { return null; }
+});
+
 ipcMain.handle('open-subtitle-dialog', async () => {
   const res = await dialog.showOpenDialog(mainWindow, {
     title: 'Abrir subtítulos',

@@ -15,7 +15,8 @@ const state = {
   lastVolume: 0.8,
   aspect: 'default',
   speed: 1,
-  playlistVisible: true
+  playlistVisible: true,
+  favoriteFolder: null
 };
 
 const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
@@ -795,6 +796,38 @@ $('btnPlClear').addEventListener('click', clearPlaylist);
 $('welcomeOpen').addEventListener('click', openMedia);
 $('welcomeFolder').addEventListener('click', openFolder);
 
+/* ===================== Carpeta favorita (botón ⭐) ===================== */
+function folderName(p) { return p ? p.split(/[\\/]/).filter(Boolean).pop() : ''; }
+function applyFavVisual() {
+  const btn = $('btnFav');
+  const set = !!state.favoriteFolder;
+  btn.classList.toggle('set', set);
+  btn.title = set
+    ? 'Abrir: ' + state.favoriteFolder + '  (clic derecho para cambiar)'
+    : 'Carpeta favorita — clic derecho para elegirla';
+}
+async function setFavorite() {
+  const dir = await window.nagi.pickFolder();
+  if (!dir) return;
+  state.favoriteFolder = dir;
+  applyFavVisual();
+  persist();
+  toast('⭐ Carpeta favorita: ' + folderName(dir));
+}
+async function openFavorite() {
+  if (!state.favoriteFolder) { setFavorite(); return; }
+  const files = await window.nagi.listFolderMedia(state.favoriteFolder);
+  if (files === null) { toast('La carpeta favorita ya no existe'); return; }
+  if (!files.length) { toast('La carpeta favorita no tiene multimedia'); return; }
+  // Cargar el contenido de la carpeta favorita (reemplaza la lista actual).
+  state.playlist = [];
+  state.current = -1;
+  addPaths(files);
+  toast('⭐ ' + folderName(state.favoriteFolder) + ' (' + files.length + ')');
+}
+$('btnFav').addEventListener('click', openFavorite);
+$('btnFav').addEventListener('contextmenu', (e) => { e.preventDefault(); setFavorite(); });
+
 /* Window controls */
 $('btnMin').addEventListener('click', () => {
   // Si hay algo cargado, acoplar al mini-reproductor; si no, minimizar normal.
@@ -868,7 +901,8 @@ function persist() {
       speed: state.speed,
       aspect: state.aspect,
       playlistVisible: state.playlistVisible,
-      alwaysOnTop: aot
+      alwaysOnTop: aot,
+      favoriteFolder: state.favoriteFolder
     });
   }, 250);
 }
@@ -882,6 +916,7 @@ async function loadSettings() {
   state.shuffle = !!s.shuffle;
   state.aspect = ['default', 'contain', 'cover', 'fill'].includes(s.aspect) ? s.aspect : 'default';
   state.playlistVisible = s.playlistVisible !== false;
+  state.favoriteFolder = (typeof s.favoriteFolder === 'string') ? s.favoriteFolder : null;
   state.lastVolume = (typeof s.volume === 'number') ? Math.max(0, Math.min(1, s.volume)) : 0.8;
 
   setVolume(state.lastVolume, false);
@@ -891,6 +926,7 @@ async function loadSettings() {
   setAspect(state.aspect, false);
   applySpeed(false);
   applyPlaylistVisible();
+  applyFavVisual();
   if (s.alwaysOnTop) { aot = true; window.nagi.setAlwaysOnTop(true); }
 
   persistReady = true;

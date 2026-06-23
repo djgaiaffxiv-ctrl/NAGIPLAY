@@ -61,6 +61,25 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
   padding: 0 10px;
 }
 
+/* Botón de carpeta favorita */
+.tb-fav {
+  -webkit-app-region: no-drag;
+  background: none; border: 0; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 9px; margin-right: 8px;
+  display: grid; place-items: center;
+  transition: transform .15s, background .15s;
+}
+.tb-fav svg { width: 18px; height: 18px; display: block; transition: filter .2s; }
+.tb-fav:hover { background: rgba(86,191,194,.16); transform: scale(1.15) rotate(-6deg); }
+.tb-fav:active { transform: scale(.92); }
+/* Sin carpeta: estrella apagada. Con carpeta: brillo pulsante. */
+.tb-fav:not(.set) svg { filter: grayscale(.7) opacity(.55); }
+.tb-fav.set svg { filter: drop-shadow(0 0 5px var(--turq-glow)); animation: favPulse 2.6s ease-in-out infinite; }
+@keyframes favPulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(86,191,194,.5)); }
+  50% { filter: drop-shadow(0 0 10px rgba(255,106,77,.7)); }
+}
+
 .tb-winctl { display: flex; -webkit-app-region: no-drag; }
 .wc {
   width: 44px; height: var(--tb-h); background: none; border: 0;

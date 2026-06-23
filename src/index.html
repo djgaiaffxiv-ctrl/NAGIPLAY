@@ -30,6 +30,18 @@
 
     <div class="tb-title" id="tbTitle">NAGIPLAY</div>
 
+    <button class="tb-fav" id="btnFav" title="Carpeta favorita — clic derecho para elegirla">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <defs>
+          <linearGradient id="favGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#56BFC2" />
+            <stop offset="1" stop-color="#ff6a4d" />
+          </linearGradient>
+        </defs>
+        <path fill="url(#favGrad)" d="M12 2.4l2.78 6.06 6.62.66-4.95 4.46 1.38 6.5L12 17.9l-5.81 3.18 1.38-6.5L2.62 9.12l6.62-.66z" />
+      </svg>
+    </button>
+
     <div class="tb-winctl">
       <button id="btnMin" class="wc" title="Minimizar"><svg viewBox="0 0 12 12"><rect x="2" y="5.5" width="8" height="1.2"/></svg></button>
       <button id="btnMax" class="wc" title="Maximizar"><svg viewBox="0 0 12 12"><rect x="2.5" y="2.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.1"/></svg></button>

@@ -6,6 +6,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('nagi', {
   openMedia: () => ipcRenderer.invoke('open-media-dialog'),
   openFolder: () => ipcRenderer.invoke('open-folder-dialog'),
+  pickFolder: () => ipcRenderer.invoke('pick-folder'),
+  listFolderMedia: (dir) => ipcRenderer.invoke('list-folder-media', dir),
   openSubtitle: () => ipcRenderer.invoke('open-subtitle-dialog'),
   readSubtitle: (p) => ipcRenderer.invoke('read-subtitle', p),
   saveSnapshot: (dataUrl, name) => ipcRenderer.invoke('save-snapshot', dataUrl, name),
