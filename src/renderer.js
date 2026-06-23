@@ -986,6 +986,7 @@ window.nagi.onMiniCommand((msg) => {
     case 'prev': prev(); break;
     case 'mute': toggleMute(); break;
     case 'loop': toggleLoop(); break;
+    case 'setvol': setVolume(msg.value, false); break;
     case 'seek': if (isFinite(video.duration)) video.currentTime = msg.value * video.duration; break;
   }
   sendMiniTick();

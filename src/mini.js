@@ -57,6 +57,18 @@ track.addEventListener('mousedown', (e) => { seeking = true; seekFrom(e); });
 window.addEventListener('mousemove', (e) => { if (seeking) seekFrom(e); });
 window.addEventListener('mouseup', () => { seeking = false; });
 
+// Volumen deslizable
+const volTrack = $('mVolTrack');
+function volFrom(e) {
+  const r = volTrack.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  window.nagi.miniCommand({ action: 'setvol', value: ratio });
+}
+let volDrag = false;
+volTrack.addEventListener('mousedown', (e) => { volDrag = true; volFrom(e); });
+window.addEventListener('mousemove', (e) => { if (volDrag) volFrom(e); });
+window.addEventListener('mouseup', () => { volDrag = false; });
+
 /* Estado recibido del reproductor principal */
 window.nagi.onPlayerState((st) => {
   if (st.type === 'meta') {
@@ -75,6 +87,7 @@ window.nagi.onPlayerState((st) => {
     $('mRem').textContent = '-' + fmt(Math.max(0, dur - st.time));
     muted = st.muted || st.volume === 0;
     $('mMute').innerHTML = muted ? IC.volMute : IC.volHigh;
+    $('mVolFill').style.width = (muted ? 0 : (st.volume || 0) * 100) + '%';
     const loop = st.loop || 'off';
     const mLoop = $('mLoop');
     mLoop.innerHTML = loop === 'one' ? IC.loopOne : IC.loop;

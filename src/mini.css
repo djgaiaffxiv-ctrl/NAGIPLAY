@@ -92,4 +92,16 @@ html, body {
 }
 .track:hover .knob { transform: translate(-50%,-50%) scale(1); }
 
-.right { display: flex; align-items: center; gap: 2px; -webkit-app-region: no-drag; }
+.right { display: flex; align-items: center; gap: 4px; -webkit-app-region: no-drag; }
+
+/* Volumen deslizable del mini */
+.mvol-track {
+  position: relative; width: 66px; height: 5px; margin: 0 4px;
+  border-radius: 999px; background: rgba(255,255,255,.16); cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+.mvol-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 80%; background: var(--turq); border-radius: 999px; }
+.mvol-fill::after {
+  content: ''; position: absolute; right: -4px; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; background: var(--turq); border-radius: 50%; box-shadow: 0 0 6px var(--turq-glow);
+}
