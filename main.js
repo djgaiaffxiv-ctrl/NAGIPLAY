@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell, Menu, screen } = require('el
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
+const { autoUpdater } = require('electron-updater');
 
 // Ruta al binario de ffmpeg (empaquetado). En build asar hay que des-empaquetarlo.
 let ffmpegPath = require('ffmpeg-static');
@@ -92,7 +93,13 @@ function createWindow() {
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  // Buscar actualizaciones (solo en la app empaquetada; en desarrollo se ignora).
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdatesAndNotify().catch(() => { /* sin conexión o sin releases */ });
+  }
+});
 
 app.on('window-all-closed', () => { app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
