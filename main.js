@@ -43,11 +43,19 @@ if (!gotLock) {
 } else {
   app.on('second-instance', (_e, argv) => {
     const files = collectCliFiles(argv);
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-      if (files.length) mainWindow.webContents.send('open-files', files);
+    // Si no hay ventana principal (p. ej. quedó solo el mini vivo), recrearla.
+    if (!mainWindow) {
+      if (files.length) pendingFiles.push(...files);
+      if (miniWindow && !miniWindow.isDestroyed()) miniWindow.destroy();
+      createWindow();
+      return;
     }
+    // Salir del modo mini y traer la ventana principal al frente.
+    if (miniWindow && !miniWindow.isDestroyed()) miniWindow.hide();
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.focus();
+    if (files.length) mainWindow.webContents.send('open-files', files);
   });
 }
 
@@ -90,7 +98,12 @@ function createWindow() {
   mainWindow.on('enter-full-screen', sendState);
   mainWindow.on('leave-full-screen', sendState);
 
-  mainWindow.on('closed', () => { mainWindow = null; });
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+    // Destruir el mini para que se disparen window-all-closed y la app cierre del todo
+    // (si no, queda un proceso zombi que bloquea reabrir la app).
+    if (miniWindow && !miniWindow.isDestroyed()) miniWindow.destroy();
+  });
 }
 
 autoUpdater.on('error', () => { /* sin conexión / sin releases: ignorar */ });
