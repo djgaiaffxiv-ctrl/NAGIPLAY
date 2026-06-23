@@ -17,7 +17,8 @@
       {
         "provider": "github",
         "owner": "djgaiaffxiv-ctrl",
-        "repo": "NAGIPLAY"
+        "repo": "NAGIPLAY",
+        "releaseType": "release"
       }
     ],
     "directories": {
