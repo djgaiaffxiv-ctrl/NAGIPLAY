@@ -16,3 +16,4 @@ nagiplay-settings.json
 
 # Copia del ejecutable renombrado (se regenera; va dentro de node_modules)
 node_modules/electron/dist/NAGIPLAY.exe
+_vtest/

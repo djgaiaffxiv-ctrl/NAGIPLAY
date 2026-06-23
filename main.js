@@ -93,12 +93,17 @@ function createWindow() {
   mainWindow.on('closed', () => { mainWindow = null; });
 }
 
+autoUpdater.on('error', () => { /* sin conexión / sin releases: ignorar */ });
 app.whenReady().then(() => {
   createWindow();
-  // Buscar actualizaciones (solo en la app empaquetada; en desarrollo se ignora).
-  if (app.isPackaged) {
-    autoUpdater.checkForUpdatesAndNotify().catch(() => { /* sin conexión o sin releases */ });
-  }
+  // Buscar actualizaciones SOLO si es un build empaquetado real (existe app-update.yml).
+  // (El ejecutable renombrado en desarrollo hace que app.isPackaged sea true, pero no hay yml.)
+  try {
+    const updateYml = path.join(process.resourcesPath, 'app-update.yml');
+    if (app.isPackaged && fs.existsSync(updateYml)) {
+      autoUpdater.checkForUpdatesAndNotify().catch(() => {});
+    }
+  } catch { /* ignorar */ }
 });
 
 app.on('window-all-closed', () => { app.quit(); });
