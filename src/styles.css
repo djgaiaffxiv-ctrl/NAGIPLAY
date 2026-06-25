@@ -107,6 +107,8 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
 }
 .dropdown li:hover { background: var(--turq-deep); color: #04181a; }
 .dropdown li.sep { height: 1px; background: var(--line); padding: 0; margin: 5px 6px; pointer-events: none; }
+.dropdown li.dd-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; padding: 4px 12px 2px; pointer-events: none; }
+.dropdown li.dd-label:hover { background: none; color: var(--muted); }
 .kbd { font-size: 11px; color: var(--muted); }
 .dropdown li:hover .kbd { color: #04181a; }
 

@@ -16,7 +16,8 @@ const state = {
   aspect: 'default',
   speed: 1,
   playlistVisible: true,
-  favoriteFolder: null
+  favoriteFolder: null,
+  openMode: 'replace' // 'replace' = reemplazar lo que suena | 'queue' = añadir a la lista
 };
 
 const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
@@ -90,19 +91,24 @@ function osd(symbol) {
 }
 
 /* ===================== Playlist ===================== */
-async function addPaths(paths, { autoplay = true } = {}) {
+async function addPaths(paths, opts = {}) {
   if (!paths || !paths.length) return;
+  // Por defecto sigue el modo elegido; se puede forzar con opts.replace.
+  const replace = opts.replace !== undefined ? opts.replace : (state.openMode === 'replace');
+  const autoplay = opts.autoplay !== false;
   const stats = await window.nagi.statFiles(paths);
+  const valid = stats.filter((s) => s.exists);
+  if (!valid.length) { toast('No se pudo abrir el archivo'); return; }
+  if (replace) { state.playlist = []; state.current = -1; }
   const startLen = state.playlist.length;
-  for (const s of stats) {
-    if (!s.exists) continue;
+  for (const s of valid) {
     state.playlist.push({ path: s.path, name: s.name, ext: s.ext, url: toFileUrl(s.path) });
   }
   renderPlaylist();
-  if (autoplay && (state.current < 0 || startLen === 0)) {
+  if (replace || (autoplay && (state.current < 0 || startLen === 0))) {
     playIndex(startLen);
   } else {
-    toast(`${stats.filter((s) => s.exists).length} añadido(s) a la lista`);
+    toast(`${valid.length} añadido(s) a la lista`);
   }
 }
 
@@ -506,10 +512,29 @@ async function openFolder() {
   else toast('Carpeta sin multimedia');
 }
 
+// Botón "+" de la lista: SIEMPRE añade (sin reemplazar), elija lo que elija el modo.
+async function addToPlaylist() {
+  const paths = await window.nagi.openMedia();
+  if (paths.length) addPaths(paths, { replace: false });
+}
+
+function applyOpenModeVisual() {
+  $('mkReplace').textContent = state.openMode === 'replace' ? '✓' : '';
+  $('mkQueue').textContent = state.openMode === 'queue' ? '✓' : '';
+}
+function setOpenMode(mode) {
+  state.openMode = mode;
+  applyOpenModeVisual();
+  persist();
+  toast(mode === 'replace' ? 'Al abrir: reemplazar' : 'Al abrir: añadir a la lista');
+}
+
 function handleAction(act) {
   switch (act) {
     case 'open-file': openMedia(); break;
     case 'open-folder': openFolder(); break;
+    case 'mode-replace': setOpenMode('replace'); break;
+    case 'mode-queue': setOpenMode('queue'); break;
     case 'clear-playlist': clearPlaylist(); break;
     case 'playpause': playpause(); break;
     case 'stop': stopAll(); break;
@@ -790,7 +815,7 @@ $('btnSnap').addEventListener('click', snapshot);
 $('btnFs').addEventListener('click', toggleFullscreen);
 $('btnPlaylistToggle').addEventListener('click', togglePlaylist);
 $('btnShuffle').addEventListener('click', toggleShuffle);
-$('btnPlAdd').addEventListener('click', openMedia);
+$('btnPlAdd').addEventListener('click', addToPlaylist);
 $('btnPlClear').addEventListener('click', clearPlaylist);
 
 $('welcomeOpen').addEventListener('click', openMedia);
@@ -898,7 +923,8 @@ function persist() {
       aspect: state.aspect,
       playlistVisible: state.playlistVisible,
       alwaysOnTop: aot,
-      favoriteFolder: state.favoriteFolder
+      favoriteFolder: state.favoriteFolder,
+      openMode: state.openMode
     });
   }, 250);
 }
@@ -913,6 +939,7 @@ async function loadSettings() {
   state.aspect = ['default', 'contain', 'cover', 'fill'].includes(s.aspect) ? s.aspect : 'default';
   state.playlistVisible = s.playlistVisible !== false;
   state.favoriteFolder = (typeof s.favoriteFolder === 'string') ? s.favoriteFolder : null;
+  state.openMode = (s.openMode === 'queue') ? 'queue' : 'replace';
   state.lastVolume = (typeof s.volume === 'number') ? Math.max(0, Math.min(1, s.volume)) : 0.8;
 
   setVolume(state.lastVolume, false);
@@ -923,6 +950,7 @@ async function loadSettings() {
   applySpeed(false);
   applyPlaylistVisible();
   applyFavVisual();
+  applyOpenModeVisual();
   if (s.alwaysOnTop) { aot = true; window.nagi.setAlwaysOnTop(true); }
 
   persistReady = true;
