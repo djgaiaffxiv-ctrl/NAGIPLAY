@@ -1,6 +1,6 @@
 {
   "name": "nagiplay",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "NAGIPLAY — reproductor de video de NAGI STUDIOS (clon de VLC)",
   "main": "main.js",
   "author": "NAGI STUDIOS",

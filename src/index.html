@@ -135,6 +135,16 @@
       <!-- Indicador toast (volumen, velocidad…) -->
       <div class="toast" id="toast"></div>
 
+      <!-- Overlay de conversión (formatos que Chromium no reproduce) -->
+      <div class="convert-overlay" id="convertOverlay" hidden>
+        <img src="nagi-mark.png" alt="" class="convert-logo" />
+        <div class="convert-title">Preparando para reproducir…</div>
+        <div class="convert-sub" id="convertName"></div>
+        <div class="convert-bar"><div class="convert-fill" id="convertFill"></div></div>
+        <div class="convert-pct" id="convertPct">Analizando…</div>
+        <button class="btn-ghost" id="convertCancel">Cancelar</button>
+      </div>
+
       <!-- Controles inferiores -->
       <div class="controls" id="controls">
         <div class="seek">

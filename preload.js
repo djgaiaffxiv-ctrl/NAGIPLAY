@@ -20,6 +20,9 @@ contextBridge.exposeInMainWorld('nagi', {
   pickSave: (opts) => ipcRenderer.invoke('pick-save', opts),
   ffmpegExport: (spec) => ipcRenderer.invoke('ffmpeg-export', spec),
   cancelExport: () => ipcRenderer.send('ffmpeg-cancel'),
+  transcodePlayback: (p) => ipcRenderer.invoke('transcode-playback', p),
+  cancelTranscode: () => ipcRenderer.send('transcode-cancel'),
+  onTranscodeProgress: (cb) => ipcRenderer.on('transcode-progress', (_e, v) => cb(v)),
   revealFile: (p) => ipcRenderer.send('reveal-file', p),
   onExportProgress: (cb) => ipcRenderer.on('export-progress', (_e, v) => cb(v)),
 

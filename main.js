@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell, Menu, screen } = require('el
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
+const crypto = require('crypto');
 const { autoUpdater } = require('electron-updater');
 
 // Ruta al binario de ffmpeg (empaquetado). En build asar hay que des-empaquetarlo.
@@ -319,6 +320,66 @@ ipcMain.handle('ffmpeg-export', (e, { args, durationSec }) => {
   });
 });
 ipcMain.on('ffmpeg-cancel', () => { if (ffJob) { try { ffJob.kill('SIGKILL'); } catch { /* */ } ffJob = null; } });
+
+/* ---- Fallback de reproducción: convertir con ffmpeg lo que Chromium no puede ---- */
+let transcodeJob = null;
+function transcodeCacheDir() {
+  const d = path.join(app.getPath('temp'), 'nagiplay-cache');
+  try { fs.mkdirSync(d, { recursive: true }); } catch { /* */ }
+  return d;
+}
+ipcMain.handle('transcode-playback', async (e, inputPath) => {
+  if (!ffmpegPath || !fs.existsSync(ffmpegPath)) return { error: 'ffmpeg no disponible' };
+  if (!inputPath || !fs.existsSync(inputPath)) return { error: 'no existe' };
+  let st; try { st = fs.statSync(inputPath); } catch { return { error: 'stat' }; }
+
+  const key = crypto.createHash('md5').update(inputPath + '|' + st.size + '|' + st.mtimeMs).digest('hex').slice(0, 16);
+  const outPath = path.join(transcodeCacheDir(), key + '.mp4');
+  if (fs.existsSync(outPath)) { try { if (fs.statSync(outPath).size > 0) return { ok: true, path: outPath, cached: true }; } catch { /* */ } }
+
+  // Sondeo de códecs y duración con ffmpeg -i
+  const probe = await new Promise((res) => {
+    let err = '';
+    let p; try { p = spawn(ffmpegPath, ['-hide_banner', '-i', inputPath], { windowsHide: true }); } catch { res(''); return; }
+    p.stderr.on('data', (d) => { err += d.toString(); });
+    p.on('close', () => res(err)); p.on('error', () => res(err));
+  });
+  const vcodec = (probe.match(/Video:\s*([\w]+)/) || [])[1]?.toLowerCase() || '';
+  const acodec = (probe.match(/Audio:\s*([\w]+)/) || [])[1]?.toLowerCase() || '';
+  const dm = probe.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/);
+  const durationSec = dm ? (+dm[1]) * 3600 + (+dm[2]) * 60 + parseFloat(dm[3]) : 0;
+  const vOk = ['h264', 'vp8', 'vp9', 'av1'].includes(vcodec);
+  const aOk = ['aac', 'mp3', 'opus', 'vorbis', 'flac'].includes(acodec);
+
+  const args = ['-y', '-i', inputPath, '-map', '0:v:0?', '-map', '0:a:0?'];
+  args.push('-c:v', vOk ? 'copy' : 'libx264');
+  if (!vOk) args.push('-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p');
+  args.push('-c:a', aOk ? 'copy' : 'aac');
+  if (!aOk) args.push('-b:a', '192k');
+  args.push('-movflags', '+faststart', outPath);
+
+  return await new Promise((resolve) => {
+    try { transcodeJob = spawn(ffmpegPath, args, { windowsHide: true }); }
+    catch (err) { transcodeJob = null; resolve({ error: String(err) }); return; }
+    let errBuf = '';
+    transcodeJob.stderr.on('data', (d) => {
+      const s = d.toString(); errBuf += s; if (errBuf.length > 8000) errBuf = errBuf.slice(-8000);
+      const m = s.match(/time=(\d+):(\d+):(\d+(?:\.\d+)?)/);
+      if (m && durationSec > 0) {
+        const t = (+m[1]) * 3600 + (+m[2]) * 60 + parseFloat(m[3]);
+        try { e.sender.send('transcode-progress', Math.max(0, Math.min(1, t / durationSec))); } catch { /* */ }
+      }
+    });
+    transcodeJob.on('error', (err) => { transcodeJob = null; resolve({ error: String(err) }); });
+    transcodeJob.on('close', (code, signal) => {
+      transcodeJob = null;
+      let ok = false; try { ok = code === 0 && fs.existsSync(outPath) && fs.statSync(outPath).size > 0; } catch { /* */ }
+      if (ok) resolve({ ok: true, path: outPath });
+      else { try { fs.unlinkSync(outPath); } catch { /* */ } resolve({ error: signal ? 'cancelado' : 'ffmpeg ' + code, detail: errBuf.slice(-800) }); }
+    });
+  });
+});
+ipcMain.on('transcode-cancel', () => { if (transcodeJob) { try { transcodeJob.kill('SIGKILL'); } catch { /* */ } transcodeJob = null; } });
 ipcMain.on('reveal-file', (_e, p) => { try { shell.showItemInFolder(p); } catch { /* */ } });
 
 // Abrir una carpeta en el Explorador de Windows (devuelve false si no existe).

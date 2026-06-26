@@ -155,6 +155,8 @@ function clearPlaylist() {
 
 function playIndex(i) {
   if (i < 0 || i >= state.playlist.length) return;
+  // Cancelar una conversión en curso de otra pista
+  if (!$('convertOverlay').hidden) { window.nagi.cancelTranscode(); hideConvert(); }
   state.current = i;
   const item = state.playlist[i];
   clearSubtitles();
@@ -436,10 +438,52 @@ video.addEventListener('ended', () => {
   if (state.loop === 'one') { video.currentTime = 0; video.play(); return; }
   next(false);
 });
+/* Fallback: si Chromium no puede reproducir (HEVC, AC3…), convertir con ffmpeg. */
+function showConvert(name) {
+  $('convertName').textContent = name || '';
+  $('convertFill').style.width = '0%';
+  $('convertPct').textContent = 'Analizando…';
+  $('convertOverlay').hidden = false;
+}
+function hideConvert() { $('convertOverlay').hidden = true; }
+
+async function tryTranscodeFallback(item) {
+  if (!item) return;
+  item._transcoding = true;
+  showConvert(item.name);
+  const res = await window.nagi.transcodePlayback(item.path);
+  item._transcoding = false;
+  hideConvert();
+  if (state.playlist[state.current] !== item) return; // ya cambió de pista
+  if (res && res.ok) {
+    item._transcoded = true;
+    item.url = toFileUrl(res.path); // reproducir (y cachear) la versión convertida
+    video.src = item.url;
+    video.playbackRate = state.speed;
+    video.play().catch(() => {});
+  } else if (res && res.error === 'cancelado') {
+    toast('Conversión cancelada');
+  } else {
+    toast('No se pudo reproducir: ' + item.name);
+    console.error('transcode falló:', res);
+  }
+}
+
 video.addEventListener('error', () => {
   if (!video.src) return;
   const item = state.playlist[state.current];
-  toast('No se pudo reproducir: ' + (item ? item.name : 'archivo'));
+  if (!item) return;
+  if (item._transcoded || item._transcoding) {
+    if (!item._transcoding) toast('No se pudo reproducir: ' + item.name);
+    return;
+  }
+  tryTranscodeFallback(item); // intentar convertir y reproducir
+});
+
+$('convertCancel').addEventListener('click', () => window.nagi.cancelTranscode());
+window.nagi.onTranscodeProgress((v) => {
+  $('convertFill').style.width = Math.round(v * 100) + '%';
+  $('convertPct').textContent = 'Convirtiendo… ' + Math.round(v * 100) + '%';
 });
 // Clic simple = play/pausa; doble clic = pantalla completa.
 // El clic simple se retrasa lo suficiente (más que el umbral del doble clic del SO)
