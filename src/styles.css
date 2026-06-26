@@ -250,7 +250,7 @@ video::cue { background: rgba(0,0,0,.6); color: #fff; font-family: 'Rubik', sans
 
 .vol { display: flex; align-items: center; gap: 4px; }
 .vol-track {
-  width: 86px; height: 6px; border-radius: 999px; background: rgba(255,255,255,.16);
+  width: 118px; height: 6px; border-radius: 999px; background: rgba(255,255,255,.16);
   position: relative; cursor: pointer;
 }
 .vol-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 80%; background: var(--turq); border-radius: 999px; }

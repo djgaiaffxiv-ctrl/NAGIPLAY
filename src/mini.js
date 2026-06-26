@@ -28,7 +28,7 @@ $('mLoop').innerHTML = IC.loop;
 // Al cargar, pedir al reproductor principal el estado actual (metadatos + tiempo).
 window.nagi.miniCommand({ action: 'sync' });
 
-let dur = 0, muted = false;
+let dur = 0, muted = false, curVol = 0.8;
 
 function fmt(s) {
   if (!isFinite(s) || s < 0) s = 0;
@@ -68,6 +68,14 @@ let volDrag = false;
 volTrack.addEventListener('mousedown', (e) => { volDrag = true; volFrom(e); });
 window.addEventListener('mousemove', (e) => { if (volDrag) volFrom(e); });
 window.addEventListener('mouseup', () => { volDrag = false; });
+// Rueda del ratón = ±1%
+function volWheel(e) {
+  e.preventDefault();
+  const v = Math.max(0, Math.min(1, curVol + (e.deltaY < 0 ? 0.01 : -0.01)));
+  window.nagi.miniCommand({ action: 'setvol', value: v });
+}
+volTrack.addEventListener('wheel', volWheel, { passive: false });
+$('mMute').addEventListener('wheel', volWheel, { passive: false });
 
 /* Estado recibido del reproductor principal */
 window.nagi.onPlayerState((st) => {
@@ -86,8 +94,9 @@ window.nagi.onPlayerState((st) => {
     $('mCur').textContent = fmt(st.time);
     $('mRem').textContent = '-' + fmt(Math.max(0, dur - st.time));
     muted = st.muted || st.volume === 0;
+    curVol = st.volume || 0;
     $('mMute').innerHTML = muted ? IC.volMute : IC.volHigh;
-    $('mVolFill').style.width = (muted ? 0 : (st.volume || 0) * 100) + '%';
+    $('mVolFill').style.width = (muted ? 0 : curVol * 100) + '%';
     const loop = st.loop || 'off';
     const mLoop = $('mLoop');
     mLoop.innerHTML = loop === 'one' ? IC.loopOne : IC.loop;

@@ -244,7 +244,8 @@ function seekBy(sec) {
 }
 
 function setVolume(v, announce = true) {
-  v = Math.max(0, Math.min(1, v));
+  // Redondear a pasos de 1% para poder afinar valores exactos (p. ej. 1%).
+  v = Math.round(Math.max(0, Math.min(1, v)) * 100) / 100;
   video.volume = v;
   video.muted = v === 0;
   if (v > 0) state.lastVolume = v;
@@ -398,11 +399,18 @@ const volTrack = $('volTrack');
 let volDragging = false;
 function volFromEvent(e) {
   const r = volTrack.getBoundingClientRect();
-  setVolume((e.clientX - r.left) / r.width, false);
+  setVolume((e.clientX - r.left) / r.width, true); // muestra el % al ajustar
 }
 volTrack.addEventListener('mousedown', (e) => { volDragging = true; volFromEvent(e); });
 window.addEventListener('mousemove', (e) => { if (volDragging) volFromEvent(e); });
 window.addEventListener('mouseup', () => { volDragging = false; });
+// Rueda del ratón sobre el volumen = ±1% (para afinar fino)
+function volWheel(e) {
+  e.preventDefault();
+  setVolume(video.volume + (e.deltaY < 0 ? 0.01 : -0.01));
+}
+volTrack.addEventListener('wheel', volWheel, { passive: false });
+$('btnMute').addEventListener('wheel', volWheel, { passive: false });
 
 /* ===================== Eventos de <video> ===================== */
 video.addEventListener('timeupdate', () => {
