@@ -17,7 +17,8 @@ const state = {
   speed: 1,
   playlistVisible: true,
   favoriteFolder: null,
-  openMode: 'replace' // 'replace' = reemplazar lo que suena | 'queue' = añadir a la lista
+  openMode: 'replace', // 'replace' = reemplazar lo que suena | 'queue' = añadir a la lista
+  wheelAction: 'seek'  // rueda sobre el vídeo: 'seek' = ±10s | 'volume' = ±5%
 };
 
 const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
@@ -472,6 +473,17 @@ stage.addEventListener('mousemove', showUI);
 stage.addEventListener('mouseleave', () => {
   if (!video.paused && video.src) stage.classList.add('hide-ui');
 });
+// Rueda del ratón sobre el vídeo (estilo VLC): saltar ±10s o volumen ±5%.
+stage.addEventListener('wheel', (e) => {
+  // No interferir con la rueda sobre los controles, el panel de recorte o la bienvenida.
+  if (e.target.closest('.controls') || e.target.closest('.welcome') || e.target.closest('.sheet')) return;
+  if (!video.src) return;
+  e.preventDefault();
+  const up = e.deltaY < 0;
+  if (state.wheelAction === 'seek') seekBy(up ? 10 : -10);
+  else setVolume(video.volume + (up ? 0.05 : -0.05));
+  showUI();
+}, { passive: false });
 
 /* ===================== Menús ===================== */
 const dropdowns = $('dropdowns');
@@ -537,12 +549,25 @@ function setOpenMode(mode) {
   toast(mode === 'replace' ? 'Al abrir: reemplazar' : 'Al abrir: añadir a la lista');
 }
 
+function applyWheelActionVisual() {
+  $('mkWheelSeek').textContent = state.wheelAction === 'seek' ? '✓' : '';
+  $('mkWheelVol').textContent = state.wheelAction === 'volume' ? '✓' : '';
+}
+function setWheelAction(action) {
+  state.wheelAction = action;
+  applyWheelActionVisual();
+  persist();
+  toast(action === 'seek' ? 'Rueda sobre el vídeo: ±10 s' : 'Rueda sobre el vídeo: volumen');
+}
+
 function handleAction(act) {
   switch (act) {
     case 'open-file': openMedia(); break;
     case 'open-folder': openFolder(); break;
     case 'mode-replace': setOpenMode('replace'); break;
     case 'mode-queue': setOpenMode('queue'); break;
+    case 'wheel-seek': setWheelAction('seek'); break;
+    case 'wheel-volume': setWheelAction('volume'); break;
     case 'clear-playlist': clearPlaylist(); break;
     case 'playpause': playpause(); break;
     case 'stop': stopAll(); break;
@@ -932,7 +957,8 @@ function persist() {
       playlistVisible: state.playlistVisible,
       alwaysOnTop: aot,
       favoriteFolder: state.favoriteFolder,
-      openMode: state.openMode
+      openMode: state.openMode,
+      wheelAction: state.wheelAction
     });
   }, 250);
 }
@@ -948,6 +974,7 @@ async function loadSettings() {
   state.playlistVisible = s.playlistVisible !== false;
   state.favoriteFolder = (typeof s.favoriteFolder === 'string') ? s.favoriteFolder : null;
   state.openMode = (s.openMode === 'queue') ? 'queue' : 'replace';
+  state.wheelAction = (s.wheelAction === 'volume') ? 'volume' : 'seek';
   state.lastVolume = (typeof s.volume === 'number') ? Math.max(0, Math.min(1, s.volume)) : 0.8;
 
   setVolume(state.lastVolume, false);
@@ -959,6 +986,7 @@ async function loadSettings() {
   applyPlaylistVisible();
   applyFavVisual();
   applyOpenModeVisual();
+  applyWheelActionVisual();
   if (s.alwaysOnTop) { aot = true; window.nagi.setAlwaysOnTop(true); }
 
   persistReady = true;
