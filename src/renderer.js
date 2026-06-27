@@ -307,8 +307,11 @@ async function snapshot() {
   canvas.height = video.videoHeight;
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
   const dataUrl = canvas.toDataURL('image/png');
-  const base = (state.playlist[state.current]?.name || 'nagiplay').replace(/\.[^.]+$/, '');
-  const saved = await window.nagi.saveSnapshot(dataUrl, `${base}-captura.png`);
+  // Nombre siempre IMG_fecha_hora -> IMG_AAAAMMDD_HHMMSS.png
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  const name = `IMG_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.png`;
+  const saved = await window.nagi.saveSnapshot(dataUrl, name);
   toast(saved ? 'Captura guardada' : 'Captura cancelada');
 }
 
