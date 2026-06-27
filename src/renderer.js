@@ -407,13 +407,12 @@ function volFromEvent(e) {
 volTrack.addEventListener('mousedown', (e) => { volDragging = true; volFromEvent(e); });
 window.addEventListener('mousemove', (e) => { if (volDragging) volFromEvent(e); });
 window.addEventListener('mouseup', () => { volDragging = false; });
-// Rueda del ratón sobre el volumen = ±1% (para afinar fino)
+// Rueda del ratón sobre TODA la barra inferior de controles = volumen ±1%
 function volWheel(e) {
   e.preventDefault();
   setVolume(video.volume + (e.deltaY < 0 ? 0.01 : -0.01));
 }
-volTrack.addEventListener('wheel', volWheel, { passive: false });
-$('btnMute').addEventListener('wheel', volWheel, { passive: false });
+$('controls').addEventListener('wheel', volWheel, { passive: false });
 
 /* ===================== Eventos de <video> ===================== */
 video.addEventListener('timeupdate', () => {
