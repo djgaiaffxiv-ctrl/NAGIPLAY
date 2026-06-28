@@ -261,6 +261,35 @@ video::cue { background: rgba(0,0,0,.6); color: #fff; font-family: 'Rubik', sans
 
 .time { font-size: 12.5px; color: var(--muted); margin-left: 10px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
+/* ===== Marcadores (zona central del footer) ===== */
+.ctl-mid { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 0 10px; }
+.ctl-mark { flex: 0 0 auto; }
+.ctl-mark .ic { width: 20px; height: 20px; }
+.ctl-mark:hover { color: var(--accent); }
+.marks {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px;
+  overflow-x: auto; overflow-y: hidden; padding: 4px 2px; scrollbar-width: thin;
+}
+.marks::-webkit-scrollbar { height: 5px; }
+.marks::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 999px; }
+.mark {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg-3); border: 1px solid var(--line); color: var(--text);
+  font-size: 12px; font-weight: 600; padding: 4px 8px 4px 10px; border-radius: 999px;
+  cursor: pointer; font-variant-numeric: tabular-nums; transition: border-color .15s, color .15s;
+}
+.mark:hover { border-color: var(--turq); color: var(--turq); }
+.mark .mark-x { opacity: .5; font-size: 13px; line-height: 1; }
+.mark .mark-x:hover { opacity: 1; color: var(--accent); }
+.marks-empty { font-size: 11.5px; color: var(--muted); opacity: .6; white-space: nowrap; }
+
+/* Marcas sobre la barra de progreso */
+.seek-marks { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; }
+.seek-marks .smark {
+  position: absolute; top: 50%; width: 3px; height: 13px; transform: translate(-50%, -50%);
+  background: var(--accent); border-radius: 2px; box-shadow: 0 0 5px rgba(255,106,77,.6);
+}
+
 /* ===== Playlist ===== */
 .playlist {
   width: 300px; flex: 0 0 300px; background: var(--panel);

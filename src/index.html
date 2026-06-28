@@ -14,7 +14,7 @@
   <!-- ===== Barra de título personalizada ===== -->
   <header class="titlebar" id="titlebar">
     <div class="tb-brand">
-      <img src="nagi-mark.png" alt="NAGI" class="tb-logo" />
+      <img src="app-icon.png" alt="NAGIPLAY" class="tb-logo" />
       <span class="tb-word">NAGI<b>PLAY</b></span>
     </div>
 
@@ -116,7 +116,7 @@
 
       <!-- Pantalla de bienvenida -->
       <div class="welcome" id="welcome">
-        <img src="nagi-mark.png" alt="NAGI STUDIOS" class="welcome-logo" />
+        <img src="app-icon.png" alt="NAGIPLAY" class="welcome-logo" />
         <h1 class="welcome-title">NAGI<b>PLAY</b></h1>
         <p class="welcome-sub">Reproductor de video · NAGI STUDIOS</p>
         <div class="welcome-actions">
@@ -137,7 +137,7 @@
 
       <!-- Overlay de conversión (formatos que Chromium no reproduce) -->
       <div class="convert-overlay" id="convertOverlay" hidden>
-        <img src="nagi-mark.png" alt="" class="convert-logo" />
+        <img src="app-icon.png" alt="" class="convert-logo" />
         <div class="convert-title">Preparando para reproducir…</div>
         <div class="convert-sub" id="convertName"></div>
         <div class="convert-bar"><div class="convert-fill" id="convertFill"></div></div>
@@ -151,6 +151,7 @@
           <div class="seek-track" id="seekTrack">
             <div class="seek-buffer" id="seekBuffer"></div>
             <div class="seek-fill" id="seekFill"></div>
+            <div class="seek-marks" id="seekMarks"></div>
             <div class="seek-knob" id="seekKnob"></div>
           </div>
           <div class="seek-tooltip" id="seekTip">0:00</div>
@@ -169,6 +170,12 @@
             </div>
 
             <span class="time" id="time">0:00 / 0:00</span>
+          </div>
+
+          <!-- Marcadores del vídeo (zona central) -->
+          <div class="ctl-mid">
+            <button class="ctl ctl-mark" id="btnMark" title="Marcar este momento (B)"></button>
+            <div class="marks" id="marksList"></div>
           </div>
 
           <div class="ctl-right">

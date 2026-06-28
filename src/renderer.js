@@ -18,7 +18,8 @@ const state = {
   playlistVisible: true,
   favoriteFolder: null,
   openMode: 'replace', // 'replace' = reemplazar lo que suena | 'queue' = añadir a la lista
-  wheelAction: 'seek'  // rueda sobre el vídeo: 'seek' = ±10s | 'volume' = ±5%
+  wheelAction: 'seek', // rueda sobre el vídeo: 'seek' = ±10s | 'volume' = ±5%
+  bookmarks: {}        // marcadores por vídeo: { rutaArchivo: [segundos, ...] }
 };
 
 const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
@@ -45,14 +46,15 @@ const ICONS = {
   fullscreen: wrap('<path d="M4 9V5.6A1.6 1.6 0 0 1 5.6 4H9"/><path d="M15 4h3.4A1.6 1.6 0 0 1 20 5.6V9"/><path d="M20 15v3.4a1.6 1.6 0 0 1-1.6 1.6H15"/><path d="M9 20H5.6A1.6 1.6 0 0 1 4 18.4V15"/>', L),
   shuffle: wrap('<path d="M4 6h3.2l9.6 12H20"/><path d="M4 18h3.2l9.6-12H20"/><path d="M17 3l3 3-3 3"/><path d="M17 15l3 3-3 3"/>', L),
   plus: wrap('<path d="M12 5v14M5 12h14"/>', L),
-  trash: wrap('<path d="M4 7h16M9.5 7V5.2a1.2 1.2 0 0 1 1.2-1.2h2.6a1.2 1.2 0 0 1 1.2 1.2V7M6.5 7l.9 11.5A1.7 1.7 0 0 0 9.1 20h5.8a1.7 1.7 0 0 0 1.7-1.5L17.5 7"/>', L)
+  trash: wrap('<path d="M4 7h16M9.5 7V5.2a1.2 1.2 0 0 1 1.2-1.2h2.6a1.2 1.2 0 0 1 1.2 1.2V7M6.5 7l.9 11.5A1.7 1.7 0 0 0 9.1 20h5.8a1.7 1.7 0 0 0 1.7-1.5L17.5 7"/>', L),
+  bookmark: wrap('<path d="M6.5 3.6h11v16.4l-5.5-3.5-5.5 3.5z"/><path d="M12 7.6v5M9.5 10.1h5"/>', L)
 };
 
 function applyIcons() {
   const map = {
     btnPrev: 'prev', btnStop: 'stop', btnNext: 'next', btnSub: 'subs',
     btnShort: 'cut', btnSnap: 'camera', btnPlaylistToggle: 'playlist', btnFs: 'fullscreen',
-    btnShuffle: 'shuffle', btnPlAdd: 'plus', btnPlClear: 'trash'
+    btnShuffle: 'shuffle', btnPlAdd: 'plus', btnPlClear: 'trash', btnMark: 'bookmark'
   };
   for (const [id, name] of Object.entries(map)) { const el = $(id); if (el) el.innerHTML = ICONS[name]; }
 }
@@ -167,6 +169,7 @@ function playIndex(i) {
   $('tbTitle').textContent = item.name + ' — NAGIPLAY';
   document.title = item.name + ' — NAGIPLAY';
   renderPlaylist();
+  renderBookmarks();
   if (miniActive) { video.addEventListener('loadeddata', sendMiniMeta, { once: true }); sendMiniTick(); }
 }
 
@@ -880,6 +883,70 @@ window.nagi.onExportProgress((v) => {
   $('shortPct').textContent = Math.round(v * 100) + '%';
 });
 
+/* ===================== Marcadores (bookmarks por vídeo) ===================== */
+function currentItem() { return state.playlist[state.current]; }
+
+function addBookmark() {
+  const item = currentItem();
+  if (!item || !video.src || !isFinite(video.duration)) { toast('Carga un vídeo primero'); return; }
+  const t = Math.max(0, Math.round(video.currentTime));
+  const arr = state.bookmarks[item.path] || (state.bookmarks[item.path] = []);
+  if (arr.some((x) => Math.abs(x - t) < 1)) { toast('Ya hay un marcador aquí'); return; }
+  arr.push(t);
+  arr.sort((a, b) => a - b);
+  persist();
+  renderBookmarks();
+  toast('🔖 Marcado en ' + fmtTime(t));
+}
+function removeBookmark(t) {
+  const item = currentItem(); if (!item) return;
+  const arr = state.bookmarks[item.path]; if (!arr) return;
+  const i = arr.indexOf(t); if (i >= 0) arr.splice(i, 1);
+  if (!arr.length) delete state.bookmarks[item.path];
+  persist();
+  renderBookmarks();
+}
+function seekTo(t) {
+  if (!isFinite(video.duration)) return;
+  video.currentTime = Math.max(0, Math.min(video.duration, t));
+}
+function renderSeekMarks(arr) {
+  const sm = $('seekMarks');
+  sm.innerHTML = '';
+  if (!isFinite(video.duration) || video.duration <= 0) return;
+  arr.forEach((t) => {
+    const d = document.createElement('div');
+    d.className = 'smark';
+    d.style.left = (t / video.duration * 100) + '%';
+    sm.appendChild(d);
+  });
+}
+function renderBookmarks() {
+  const list = $('marksList');
+  const item = currentItem();
+  const arr = (item && state.bookmarks[item.path]) ? state.bookmarks[item.path] : [];
+  list.innerHTML = '';
+  if (!item) { renderSeekMarks([]); return; }
+  if (!arr.length) {
+    list.innerHTML = '<span class="marks-empty">Sin marcadores</span>';
+  } else {
+    arr.forEach((t) => {
+      const b = document.createElement('button');
+      b.className = 'mark';
+      b.title = 'Ir a ' + fmtTime(t);
+      b.innerHTML = fmtTime(t) + '<span class="mark-x" title="Quitar">✕</span>';
+      b.addEventListener('click', (e) => {
+        if (e.target.classList.contains('mark-x')) { e.stopPropagation(); removeBookmark(t); return; }
+        seekTo(t);
+      });
+      list.appendChild(b);
+    });
+  }
+  renderSeekMarks(arr);
+}
+$('btnMark').addEventListener('click', addBookmark);
+video.addEventListener('loadedmetadata', () => renderBookmarks());
+
 /* ===================== Botones de controles ===================== */
 $('btnPlay').addEventListener('click', (e) => { e.stopPropagation(); playpause(); });
 $('btnStop').addEventListener('click', stopAll);
@@ -977,6 +1044,7 @@ window.addEventListener('keydown', (e) => {
     case 'n': case 'N': next(true); break;
     case 'p': case 'P': prev(); break;
     case 'l': case 'L': toggleLoop(); break;
+    case 'b': case 'B': addBookmark(); break;
     case '+': case '=': cycleSpeed(1); break;
     case '-': case '_': cycleSpeed(-1); break;
     default:
@@ -1004,7 +1072,8 @@ function persist() {
       alwaysOnTop: aot,
       favoriteFolder: state.favoriteFolder,
       openMode: state.openMode,
-      wheelAction: state.wheelAction
+      wheelAction: state.wheelAction,
+      bookmarks: state.bookmarks
     });
   }, 250);
 }
@@ -1021,6 +1090,7 @@ async function loadSettings() {
   state.favoriteFolder = (typeof s.favoriteFolder === 'string') ? s.favoriteFolder : null;
   state.openMode = (s.openMode === 'queue') ? 'queue' : 'replace';
   state.wheelAction = (s.wheelAction === 'volume') ? 'volume' : 'seek';
+  state.bookmarks = (s.bookmarks && typeof s.bookmarks === 'object') ? s.bookmarks : {};
   state.lastVolume = (typeof s.volume === 'number') ? Math.max(0, Math.min(1, s.volume)) : 0.8;
 
   setVolume(state.lastVolume, false);
