@@ -23,6 +23,7 @@ let mainWindow = null;
 let miniWindow = null;
 // Archivos pasados por línea de comandos / asociación (Abrir con...).
 let pendingFiles = collectCliFiles(process.argv);
+let pendingAdd = process.argv.includes('--add'); // --add = encolar (no reemplazar)
 
 function collectCliFiles(argv) {
   return argv
@@ -44,9 +45,10 @@ if (!gotLock) {
 } else {
   app.on('second-instance', (_e, argv) => {
     const files = collectCliFiles(argv);
+    const add = argv.includes('--add');
     // Si no hay ventana principal (p. ej. quedó solo el mini vivo), recrearla.
     if (!mainWindow) {
-      if (files.length) pendingFiles.push(...files);
+      if (files.length) { pendingFiles.push(...files); pendingAdd = add; }
       if (miniWindow && !miniWindow.isDestroyed()) miniWindow.destroy();
       createWindow();
       return;
@@ -56,7 +58,7 @@ if (!gotLock) {
     if (mainWindow.isMinimized()) mainWindow.restore();
     if (!mainWindow.isVisible()) mainWindow.show();
     mainWindow.focus();
-    if (files.length) mainWindow.webContents.send('open-files', files);
+    if (files.length) mainWindow.webContents.send(add ? 'add-files' : 'open-files', files);
   });
 }
 
@@ -84,8 +86,9 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     if (pendingFiles.length) {
-      mainWindow.webContents.send('open-files', pendingFiles);
+      mainWindow.webContents.send(pendingAdd ? 'add-files' : 'open-files', pendingFiles);
       pendingFiles = [];
+      pendingAdd = false;
     }
   });
 
@@ -108,8 +111,34 @@ function createWindow() {
 }
 
 autoUpdater.on('error', () => { /* sin conexión / sin releases: ignorar */ });
+// Registra "Añadir a lista de reproducción" en el menú contextual de Windows
+// (clic derecho sobre vídeos → encola en NAGIPLAY con --add). Solo app instalada.
+function registerPlaylistContextMenu() {
+  try {
+    const asar = path.join(path.dirname(process.execPath), 'resources', 'app.asar');
+    if (!fs.existsSync(asar)) return; // no es la app empaquetada real
+    const marker = path.join(app.getPath('userData'), 'ctxmenu.ver');
+    let prev = ''; try { prev = fs.readFileSync(marker, 'utf8'); } catch { /* */ }
+    if (prev === app.getVersion()) return; // ya registrado para esta versión
+
+    const exe = process.execPath;
+    const verb = 'NAGIPLAYAddToPlaylist';
+    const label = 'Añadir a lista de reproducción de NAGIPLAY';
+    const exts = ['.mp4', '.mkv', '.webm', '.mov', '.m4v', '.avi', '.flv', '.ts', '.mpg', '.mpeg', '.mp3', '.m4a', '.flac', '.wav', '.ogg', '.opus', '.aac'];
+    const reg = (args) => { try { spawn('reg', args, { windowsHide: true }); } catch { /* */ } };
+    for (const ext of exts) {
+      const k = `HKCU\\Software\\Classes\\SystemFileAssociations\\${ext}\\shell\\${verb}`;
+      reg(['add', k, '/ve', '/d', label, '/f']);
+      reg(['add', k, '/v', 'Icon', '/d', `${exe},0`, '/f']);
+      reg(['add', `${k}\\command`, '/ve', '/d', `"${exe}" --add "%1"`, '/f']);
+    }
+    try { fs.writeFileSync(marker, app.getVersion()); } catch { /* */ }
+  } catch { /* ignorar */ }
+}
+
 app.whenReady().then(() => {
   createWindow();
+  registerPlaylistContextMenu();
   // Buscar actualizaciones SOLO si es un build empaquetado real (existe app-update.yml).
   // (El ejecutable renombrado en desarrollo hace que app.isPackaged sea true, pero no hay yml.)
   try {

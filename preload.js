@@ -34,6 +34,7 @@ contextBridge.exposeInMainWorld('nagi', {
   openExternal: (url) => ipcRenderer.send('open-external', url),
 
   onOpenFiles: (cb) => ipcRenderer.on('open-files', (_e, files) => cb(files)),
+  onAddFiles: (cb) => ipcRenderer.on('add-files', (_e, files) => cb(files)),
   onWindowState: (cb) => ipcRenderer.on('window-state', (_e, st) => cb(st)),
 
   // Mini-reproductor (segunda ventana acoplada a la barra de tareas)

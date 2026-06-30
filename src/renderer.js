@@ -1175,6 +1175,7 @@ window.nagi.onMiniExited(() => { miniActive = false; });
 
 /* ===================== IPC desde main ===================== */
 window.nagi.onOpenFiles((files) => addPaths(files));
+window.nagi.onAddFiles((files) => addPaths(files, { replace: false })); // clic derecho → "Añadir a la lista"
 window.nagi.onWindowState((st) => {
   // Pantalla completa inmersiva: ocultar barra de título y lista.
   document.body.classList.toggle('fs', !!st.fullscreen);
