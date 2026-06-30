@@ -44,5 +44,9 @@ contextBridge.exposeInMainWorld('nagi', {
   onMiniCommand: (cb) => ipcRenderer.on('mini-command', (_e, msg) => cb(msg)),
   playerState: (st) => ipcRenderer.send('player-state', st),
   onPlayerState: (cb) => ipcRenderer.on('player-state', (_e, st) => cb(st)),
-  onMiniExited: (cb) => ipcRenderer.on('mini-exited', () => cb())
+  onMiniExited: (cb) => ipcRenderer.on('mini-exited', () => cb()),
+
+  installUpdate: () => ipcRenderer.send('install-update'),
+  checkUpdate: () => ipcRenderer.send('check-update'),
+  onUpdateStatus: (cb) => ipcRenderer.on('update-status', (_e, s) => cb(s))
 });

@@ -136,17 +136,27 @@ function registerPlaylistContextMenu() {
   } catch { /* ignorar */ }
 }
 
+/* ---- Auto-actualización visible ---- */
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true; // también se instala al cerrar
+function canUpdate() {
+  try { return app.isPackaged && fs.existsSync(path.join(process.resourcesPath, 'app-update.yml')); }
+  catch { return false; }
+}
+function sendUpdate(status) { if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('update-status', status); }
+autoUpdater.on('update-available', (i) => sendUpdate({ state: 'downloading', version: i && i.version }));
+autoUpdater.on('update-downloaded', (i) => sendUpdate({ state: 'ready', version: i && i.version }));
+autoUpdater.on('update-not-available', () => sendUpdate({ state: 'none' }));
+ipcMain.on('install-update', () => { try { autoUpdater.quitAndInstall(); } catch { /* */ } });
+ipcMain.on('check-update', () => {
+  if (!canUpdate()) { sendUpdate({ state: 'dev' }); return; }
+  try { autoUpdater.checkForUpdates().catch(() => {}); } catch { /* */ }
+});
+
 app.whenReady().then(() => {
   createWindow();
   registerPlaylistContextMenu();
-  // Buscar actualizaciones SOLO si es un build empaquetado real (existe app-update.yml).
-  // (El ejecutable renombrado en desarrollo hace que app.isPackaged sea true, pero no hay yml.)
-  try {
-    const updateYml = path.join(process.resourcesPath, 'app-update.yml');
-    if (app.isPackaged && fs.existsSync(updateYml)) {
-      autoUpdater.checkForUpdatesAndNotify().catch(() => {});
-    }
-  } catch { /* ignorar */ }
+  if (canUpdate()) { try { autoUpdater.checkForUpdates().catch(() => {}); } catch { /* */ } }
 });
 
 app.on('window-all-closed', () => { app.quit(); });

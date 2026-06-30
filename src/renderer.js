@@ -640,6 +640,7 @@ function handleAction(act) {
     case 'sub-delay-plus': shiftSubDelay(0.25); break;
     case 'toggle-playlist': togglePlaylist(); break;
     case 'always-on-top': toggleAlwaysOnTop(); break;
+    case 'check-update': updateChecking = true; toast('Buscando actualizaciones…'); window.nagi.checkUpdate(); break;
     case 'shortcuts': showShortcuts(); break;
     case 'about': showAbout(); break;
   }
@@ -1176,6 +1177,26 @@ window.nagi.onMiniExited(() => { miniActive = false; });
 /* ===================== IPC desde main ===================== */
 window.nagi.onOpenFiles((files) => addPaths(files));
 window.nagi.onAddFiles((files) => addPaths(files, { replace: false })); // clic derecho → "Añadir a la lista"
+
+/* ===================== Actualizaciones ===================== */
+let updateChecking = false;
+window.nagi.onUpdateStatus((s) => {
+  if (s.state === 'ready') {
+    $('ubText').textContent = 'Versión ' + (s.version || 'nueva') + ' lista para instalar';
+    $('updateBanner').hidden = false;
+    updateChecking = false;
+  } else if (s.state === 'downloading') {
+    if (updateChecking) toast('Descargando actualización ' + (s.version || '') + '…');
+  } else if (s.state === 'none') {
+    if (updateChecking) toast('Ya tienes la última versión ✓');
+    updateChecking = false;
+  } else if (s.state === 'dev') {
+    if (updateChecking) toast('Las actualizaciones solo van en la app instalada');
+    updateChecking = false;
+  }
+});
+$('ubInstall').addEventListener('click', () => window.nagi.installUpdate());
+$('ubLater').addEventListener('click', () => { $('updateBanner').hidden = true; });
 window.nagi.onWindowState((st) => {
   // Pantalla completa inmersiva: ocultar barra de título y lista.
   document.body.classList.toggle('fs', !!st.fullscreen);

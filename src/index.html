@@ -103,6 +103,7 @@
       <li data-act="fullscreen">Pantalla completa<span class="kbd">F</span></li>
     </ul>
     <ul class="dropdown" data-for="help">
+      <li data-act="check-update">Buscar actualizaciones</li>
       <li data-act="shortcuts">Atajos de teclado</li>
       <li data-act="about">Acerca de NAGIPLAY</li>
     </ul>
@@ -254,6 +255,14 @@
         <button class="btn-primary" id="shortExport">Guardar recorte (MP4)</button>
       </div>
     </div>
+  </div>
+
+  <!-- ===== Aviso de actualización ===== -->
+  <div class="update-banner" id="updateBanner" hidden>
+    <img src="nagi-mark.png" alt="" class="ub-logo" />
+    <span class="ub-text" id="ubText">Actualización lista</span>
+    <button class="ub-btn" id="ubInstall">Reiniciar ahora</button>
+    <button class="ub-x" id="ubLater" title="Luego">✕</button>
   </div>
 
   <!-- ===== Modal (atajos / acerca de) ===== -->
