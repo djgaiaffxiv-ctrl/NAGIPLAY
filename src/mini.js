@@ -84,7 +84,7 @@ window.nagi.onPlayerState((st) => {
     $('mSub').textContent = st.sub || 'NAGIPLAY';
     const img = $('artImg');
     if (st.art) { img.src = st.art; img.classList.remove('is-logo'); }
-    else { img.src = 'nagi-mark.png'; img.classList.add('is-logo'); }
+    else { img.src = 'nagiplay-icon.png'; img.classList.remove('is-logo'); }
   } else if (st.type === 'tick') {
     dur = st.duration || 0;
     $('mPlay').innerHTML = st.playing ? IC.pause : IC.play;
